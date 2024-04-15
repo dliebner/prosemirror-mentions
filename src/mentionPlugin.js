@@ -197,13 +197,17 @@ export function getMentionsPlugin(opts) {
   var removeClassAtIndex = function(index, className) {
     var itemList = el.querySelector(".suggestion-item-list").childNodes;
     var prevItem = itemList[index];
-    prevItem.classList.remove(className);
+    if (prevItem) {
+      prevItem.classList.remove(className);
+    }
   };
 
   var addClassAtIndex = function(index, className) {
     var itemList = el.querySelector(".suggestion-item-list").childNodes;
     var prevItem = itemList[index];
-    prevItem.classList.add(className);
+    if (prevItem) {
+      prevItem.classList.add(className);
+    }
   };
 
   var setIndex = function(index, state, opts) {
@@ -229,6 +233,8 @@ export function getMentionsPlugin(opts) {
 
   var select = function(view, state, opts) {
     var item = state.suggestions[state.index];
+    if (!item) return;
+
     var attrs;
     if (state.type === "mention") {
       attrs = {
