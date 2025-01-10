@@ -103,6 +103,9 @@ var defaultOpts = {
   // if true: allows you to type @FirstName LastName with a space in between.
   allowSpace: true,
 
+  // if true: requires text after the trigger before showing the dropdown
+  requireText: false,
+
   /**
    * callback to fetch suggestions and return a list of suggestions
    * @param {String} type - 'mention' or 'tag'

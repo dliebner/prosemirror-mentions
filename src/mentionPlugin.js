@@ -6,12 +6,15 @@ import { Decoration, DecorationSet } from "prosemirror-view";
  * @param {String} mentionTrigger
  * @param {String} hashtagTrigger
  * @param {bool} allowSpace
+ * @param {bool} requireText
  * @returns {Object}
  */
-export function getRegexp(mentionTrigger, hashtagTrigger, allowSpace) {
+export function getRegexp(mentionTrigger, hashtagTrigger, allowSpace, requireText) {
+  var textOperator = requireText ? '+' : '*';
+
   var mention = allowSpace
-    ? new RegExp("(^|\\s)" + mentionTrigger + "([\\w-\\+]+\\s?[\\w-\\+]*)$")
-    : new RegExp("(^|\\s)" + mentionTrigger + "([\\w-\\+]+)$");
+    ? new RegExp("(^|\\s)" + mentionTrigger + "([\\w-\\+]" + textOperator + "\\s?[\\w-\\+]*)$")
+    : new RegExp("(^|\\s)" + mentionTrigger + "([\\w-\\+]" + textOperator + ")$");
 
   // hashtags should never allow spaces. I mean, what's the point of allowing spaces in hashtags?
   var tag = new RegExp("(^|\\s)" + hashtagTrigger + "([\\w-]+)$");
@@ -37,7 +40,8 @@ export function getMatch($position, opts) {
   var regex = getRegexp(
     opts.mentionTrigger,
     opts.hashtagTrigger,
-    opts.allowSpace
+    opts.allowSpace,
+    opts.requireText
   );
 
   // only one of the below matches will be true.
@@ -118,6 +122,7 @@ export function getMentionsPlugin(opts) {
     mentionTrigger: "@",
     hashtagTrigger: "#",
     allowSpace: true,
+    requireText: false,
     getSuggestions: (type, text, cb) => {
       cb([]);
     },
@@ -349,7 +354,7 @@ export function getMentionsPlugin(opts) {
       return {
         update: view => {
           var state = this.key.getState(view.state);
-          if (!state.text) {
+          if( !state.active || (opts.requireText && !state.text) ) {
             hideList();
             clearTimeout(showListTimeoutId);
             return;
