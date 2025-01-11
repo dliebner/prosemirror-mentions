@@ -143,8 +143,9 @@ export function getMentionsPlugin(opts) {
   // timeoutId for clearing debounced calls
   var showListTimeoutId = null;
 
-  // dropdown element
-  var el = document.createElement("div");
+  /** dropdown element */
+  var el = document.createElement("div"),
+  elAddedToBody = false;
 
   // current Idx
   var index = 0;
@@ -184,7 +185,10 @@ export function getMentionsPlugin(opts) {
     var offset = textDOM.getBoundingClientRect();
 
     // TODO: think about outsourcing this positioning logic as options
-    document.body.appendChild(el);
+    if( !elAddedToBody ) {
+      elAddedToBody = true;
+      document.body.appendChild(el);
+    }
     el.classList.add('suggestion-item-container')
     el.style.position = "fixed";
     el.style.left = offset.left + "px";
@@ -363,9 +367,7 @@ export function getMentionsPlugin(opts) {
           showListTimeoutId = debounce(
             function() {
               // get suggestions and set new state
-              opts.getSuggestions(state.type, state.text, function(
-                suggestions
-              ) {
+              opts.getSuggestions(state.type, state.text, function( suggestions ) {
                 // update `state` argument with suggestions
                 state.suggestions = suggestions;
                 showList(view, state, suggestions, opts);
@@ -374,6 +376,10 @@ export function getMentionsPlugin(opts) {
             opts.delay,
             this
           );
+        },
+        destroy: () => {
+          // remove the dropdown el
+          el.remove();
         }
       };
     }
