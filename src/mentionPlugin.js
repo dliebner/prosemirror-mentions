@@ -109,8 +109,11 @@ var getNewState = function() {
     text: "",
   };
 };
-// default options
-/** @template DropdownEl @template SuggestionItem */
+/**
+ * Default options
+ * @template {HTMLElement} DropdownEl
+ * @template SuggestionItem
+ * */
 var defaultOpts = {
   mentionTrigger: "@",
   hashtagTrigger: "#",
@@ -130,7 +133,8 @@ var defaultOpts = {
   goPrev: (dropdownEl, opts) => null,
   /** @param {DropdownEl} dropdownEl */
   getCurItemAttrsForSelect: (dropdownEl, opts) => null,
-  destroy: () => null,
+  /** @param {DropdownEl} dropdownEl */
+  destroy: (dropdownEl) => null,
   activeClass: "suggestion-item-active",
   suggestionTextClass: "prosemirror-suggestion",
   maxNoOfSuggestions: 10,
@@ -313,7 +317,7 @@ export function getMentionsPlugin( options ) {
         destroy: () => {
           // remove the dropdown el
           el.remove();
-          opts.destroy();
+          opts.destroy( el );
         }
       };
     }
