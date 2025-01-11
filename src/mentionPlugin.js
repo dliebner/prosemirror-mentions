@@ -122,7 +122,7 @@ var defaultOpts = {
   /** @returns {DropdownEl} */
   createDropdownEl: () => document.createElement('div'),
   /** @param {DropdownEl} dropdownEl @param {SuggestionItem[]} suggestionItems */
-  showDropdownEl: (dropdownEl, suggestionItems, opts) => null,
+  showDropdownEl: (dropdownEl, inputText, suggestionItems, opts) => null,
   /** @param {DropdownEl} dropdownEl */
   hideDropdownEl: (dropdownEl, opts) => null,
   /** @param {(suggestionItems: SuggestionItem) => void} callWhenDone */
@@ -184,7 +184,7 @@ export function getMentionsPlugin( options ) {
     el.style.top = top + "px";
     el.style.display = "block";
     el.style.zIndex = "999999";
-    opts.showDropdownEl( el, suggestionItems, opts );
+    opts.showDropdownEl( el, state.text, suggestionItems, opts );
   };
 
   var hideList = function() {
