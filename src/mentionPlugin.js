@@ -110,19 +110,25 @@ var getNewState = function() {
   };
 };
 // default options
+/** @template {HTMLElement} DropdownEl @template SuggestionItem */
 var defaultOpts = {
   mentionTrigger: "@",
   hashtagTrigger: "#",
   allowSpace: true,
   requireText: false,
-  /** @returns {HTMLElement} */
+  /** @returns {DropdownEl} */
   createDropdownEl: () => document.createElement('div'),
+  /** @param {DropdownEl} dropdownEl @param {SuggestionItem[]} suggestionItems */
   showDropdownEl: (dropdownEl, suggestionItems, opts) => null,
+  /** @param {DropdownEl} dropdownEl */
   hideDropdownEl: (dropdownEl, opts) => null,
-  /** @param {(suggestionItems: any) => void} callWhenDone */
+  /** @param {(suggestionItems: SuggestionItem) => void} callWhenDone */
   getSuggestions: (type, text, callWhenDone) => callWhenDone(),
+  /** @param {DropdownEl} dropdownEl */
   goNext: (dropdownEl, opts) => null,
+  /** @param {DropdownEl} dropdownEl */
   goPrev: (dropdownEl, opts) => null,
+  /** @param {DropdownEl} dropdownEl */
   getCurItemAttrsForSelect: (dropdownEl, opts) => null,
   destroy: () => null,
   activeClass: "suggestion-item-active",
