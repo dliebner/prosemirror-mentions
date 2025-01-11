@@ -117,11 +117,10 @@ var defaultOpts = {
   requireText: false,
   /** @returns {HTMLElement} */
   createDropdownEl: () => document.createElement('div'),
-  showDropdownEl: (dropdownEl, opts) => null,
+  showDropdownEl: (dropdownEl, suggestionItems, opts) => null,
   hideDropdownEl: (dropdownEl, opts) => null,
-  getSuggestions: (type, text, callWhenDone) => {
-    callWhenDone();
-  },
+  /** @param {(suggestionItems: any) => void} callWhenDone */
+  getSuggestions: (type, text, callWhenDone) => callWhenDone(),
   goNext: (dropdownEl, opts) => null,
   goPrev: (dropdownEl, opts) => null,
   getCurItemAttrsForSelect: (dropdownEl, opts) => null,
@@ -150,7 +149,8 @@ export function getMentionsPlugin( options ) {
 
   // ----- methods operating on above properties -----
 
-  var showList = function(view, state, opts) {
+  /** @param {any[]} [suggestionItems] */
+  var showList = function(view, state, suggestionItems, opts) {
 
     // get current @mention span left and top.
     // TODO: knock off domAtPos usage. It's not documented and is not officially a public API.
@@ -174,7 +174,7 @@ export function getMentionsPlugin( options ) {
     el.style.top = top + "px";
     el.style.display = "block";
     el.style.zIndex = "999999";
-    opts.showDropdownEl( el, opts );
+    opts.showDropdownEl( el, suggestionItems, opts );
   };
 
   var hideList = function() {
@@ -296,8 +296,8 @@ export function getMentionsPlugin( options ) {
           showListTimeoutId = debounce(
             function() {
               // get suggestions
-              opts.getSuggestions(state.type, state.text, function callWhenDone() {
-                showList(view, state, opts);
+              opts.getSuggestions(state.type, state.text, function callWhenDone( suggestionItems ) {
+                showList(view, state, suggestionItems, opts);
               });
             },
             opts.delay,
