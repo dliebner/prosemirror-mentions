@@ -110,7 +110,7 @@ var getNewState = function() {
   };
 };
 // default options
-/** @template {HTMLElement} DropdownEl @template SuggestionItem */
+/** @template DropdownEl @template SuggestionItem */
 var defaultOpts = {
   mentionTrigger: "@",
   hashtagTrigger: "#",
