@@ -107,72 +107,50 @@ var getNewState = function() {
     },
     type: "", //mention or tag
     text: "",
-    suggestions: [],
-    index: 0 // current active suggestion index
   };
+};
+// default options
+var defaultOpts = {
+  mentionTrigger: "@",
+  hashtagTrigger: "#",
+  allowSpace: true,
+  requireText: false,
+  /** @returns {HTMLElement} */
+  createDropdownEl: () => document.createElement('div'),
+  showDropdownEl: (dropdownEl, opts) => null,
+  hideDropdownEl: (dropdownEl, opts) => null,
+  getSuggestions: (type, text, callWhenDone) => {
+    callWhenDone();
+  },
+  goNext: (dropdownEl, opts) => null,
+  goPrev: (dropdownEl, opts) => null,
+  getCurItemAttrsForSelect: (dropdownEl, opts) => null,
+  destroy: () => null,
+  activeClass: "suggestion-item-active",
+  suggestionTextClass: "prosemirror-suggestion",
+  maxNoOfSuggestions: 10,
+  delay: 500
 };
 
 /**
- * @param {JSONObject} opts
+ * @param {typeof defaultOpts} options
  * @returns {Plugin}
  */
-export function getMentionsPlugin(opts) {
-  // default options
-  var defaultOpts = {
-    mentionTrigger: "@",
-    hashtagTrigger: "#",
-    allowSpace: true,
-    requireText: false,
-    getSuggestions: (type, text, cb) => {
-      cb([]);
-    },
-    getSuggestionsHTML: items =>
-      '<div class="suggestion-item-list">' +
-      items
-        .map(i => '<div class="suggestion-item">' + i.name + "</div>")
-        .join("") +
-      "</div>",
-    activeClass: "suggestion-item-active",
-    suggestionTextClass: "prosemirror-suggestion",
-    maxNoOfSuggestions: 10,
-    delay: 500
-  };
+export function getMentionsPlugin( options ) {
 
-  var opts = Object.assign({}, defaultOpts, opts);
+  /** @type {typeof defaultOpts} */
+  const opts = Object.assign({}, defaultOpts, options);
 
   // timeoutId for clearing debounced calls
   var showListTimeoutId = null;
 
   /** dropdown element */
-  var el = document.createElement("div"),
+  var el = opts.createDropdownEl(),
   elAddedToBody = false;
-
-  // current Idx
-  var index = 0;
 
   // ----- methods operating on above properties -----
 
-  var showList = function(view, state, suggestions, opts) {
-    el.innerHTML = opts.getSuggestionsHTML(suggestions, state.type);
-
-    // attach new item event handlers
-    el.querySelectorAll(".suggestion-item").forEach(function(itemNode, index) {
-      itemNode.addEventListener("click", function() {
-        select(view, state, opts);
-        view.focus();
-      });
-      // TODO: setIndex() needlessly queries.
-      // We already have the itemNode. SHOULD OPTIMIZE.
-      itemNode.addEventListener("mouseover", function() {
-        setIndex(index, state, opts);
-      });
-      itemNode.addEventListener("mouseout", function() {
-        setIndex(index, state, opts);
-      });
-    });
-
-    // highlight first element by default - like Facebook.
-    addClassAtIndex(state.index, opts.activeClass);
+  var showList = function(view, state, opts) {
 
     // get current @mention span left and top.
     // TODO: knock off domAtPos usage. It's not documented and is not officially a public API.
@@ -189,7 +167,6 @@ export function getMentionsPlugin(opts) {
       elAddedToBody = true;
       document.body.appendChild(el);
     }
-    el.classList.add('suggestion-item-container')
     el.style.position = "fixed";
     el.style.left = offset.left + "px";
 
@@ -197,71 +174,25 @@ export function getMentionsPlugin(opts) {
     el.style.top = top + "px";
     el.style.display = "block";
     el.style.zIndex = "999999";
+    opts.showDropdownEl( el, opts );
   };
 
   var hideList = function() {
     el.style.display = "none";
+    opts.hideDropdownEl( el, opts );
   };
 
-  var removeClassAtIndex = function(index, className) {
-    var itemList = el.querySelector(".suggestion-item-list").childNodes;
-    var prevItem = itemList[index];
-    if (prevItem) {
-      prevItem.classList.remove(className);
-    }
-  };
-
-  var addClassAtIndex = function(index, className) {
-    var itemList = el.querySelector(".suggestion-item-list").childNodes;
-    var prevItem = itemList[index];
-    if (prevItem) {
-      prevItem.classList.add(className);
-    }
-  };
-
-  var setIndex = function(index, state, opts) {
-    removeClassAtIndex(state.index, opts.activeClass);
-    state.index = index;
-    addClassAtIndex(state.index, opts.activeClass);
-  };
-
-  var goNext = function(view, state, opts) {
-    removeClassAtIndex(state.index, opts.activeClass);
-    state.index++;
-    state.index = state.index === state.suggestions.length ? 0 : state.index;
-    addClassAtIndex(state.index, opts.activeClass);
-  };
-
-  var goPrev = function(view, state, opts) {
-    removeClassAtIndex(state.index, opts.activeClass);
-    state.index--;
-    state.index =
-      state.index === -1 ? state.suggestions.length - 1 : state.index;
-    addClassAtIndex(state.index, opts.activeClass);
-  };
-
+  /** @param {typeof defaultOpts} opts */
   var select = function(view, state, opts) {
-    var item = state.suggestions[state.index];
-    if (!item) return;
-
-    var attrs;
-    if (state.type === "mention") {
-      attrs = {
-        name: item.name,
-        id: item.id,
-        email: item.email
-      };
-    } else {
-      attrs = {
-        tag: item.tag
-      };
+    const attrs = opts.getCurItemAttrsForSelect( el, opts );
+    if( attrs ) {
+      var node = view.state.schema.nodes[state.type].create(attrs);
+      var tr = view.state.tr.replaceWith(state.range.from, state.range.to, node);
+  
+      //var newState = view.state.apply(tr);
+      //view.updateState(newState);
+      view.dispatch(tr);
     }
-    var node = view.state.schema.nodes[state.type].create(attrs);
-    var tr = view.state.tr.replaceWith(state.range.from, state.range.to, node);
-
-    //var newState = view.state.apply(tr);
-    //view.updateState(newState);
-    view.dispatch(tr)
   };
 
   /**
@@ -306,10 +237,8 @@ export function getMentionsPlugin(opts) {
       handleKeyDown(view, e) {
         var state = this.getState(view.state);
 
-        // don't handle if no suggestions or not in active mode
-        if (!state.active && !state.suggestions.length) {
-          return false;
-        }
+        // don't handle if not in active mode
+        if( !state.active ) return false;
 
         // if any of the below keys, override with custom handlers.
         var down, up, enter, esc;
@@ -318,13 +247,13 @@ export function getMentionsPlugin(opts) {
         up = e.keyCode === 38;
         esc = e.keyCode === 27;
 
-        if (down) {
-          goNext(view, state, opts);
+        if( down ) {
+          opts.goNext( el, opts );
           return true;
         } else if (up) {
-          goPrev(view, state, opts);
+          opts.goPrev( el, opts );
           return true;
-        } else if (enter) {
+        } else if( enter ) {
           select(view, state, opts);
           return true;
         } else if (esc) {
@@ -366,11 +295,9 @@ export function getMentionsPlugin(opts) {
           // debounce the call to avoid multiple requests
           showListTimeoutId = debounce(
             function() {
-              // get suggestions and set new state
-              opts.getSuggestions(state.type, state.text, function( suggestions ) {
-                // update `state` argument with suggestions
-                state.suggestions = suggestions;
-                showList(view, state, suggestions, opts);
+              // get suggestions
+              opts.getSuggestions(state.type, state.text, function callWhenDone() {
+                showList(view, state, opts);
               });
             },
             opts.delay,
@@ -380,6 +307,7 @@ export function getMentionsPlugin(opts) {
         destroy: () => {
           // remove the dropdown el
           el.remove();
+          opts.destroy();
         }
       };
     }
