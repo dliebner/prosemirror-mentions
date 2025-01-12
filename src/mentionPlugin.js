@@ -197,7 +197,9 @@ export function getMentionsPlugin( options ) {
     const attrs = opts.getCurItemAttrsForSelect( el, opts );
     if( attrs ) {
       var node = view.state.schema.nodes[state.type].create(attrs);
-      var tr = view.state.tr.replaceWith(state.range.from, state.range.to, node);
+      var tr = view.state.tr
+        .replaceWith(state.range.from, state.range.to, node)
+        .insert(state.range.from + node.nodeSize, view.state.schema.text(' '));
   
       //var newState = view.state.apply(tr);
       //view.updateState(newState);
