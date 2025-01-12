@@ -233,7 +233,7 @@ export function getMentionsPlugin( options ) {
 
         // if match found update state
         if (match) {
-          newState.activeSuggestAnchorId = 'pm-suggestion-' + Date.now();
+          newState.activeSuggestAnchorId = state.activeSuggestAnchorId ?? `pm-suggestion-${Date.now()}`;
           newState.range = match.range;
           newState.type = match.type;
           newState.text = match.queryText;
