@@ -37,7 +37,9 @@ export const mentionNode = {
         return { did, handle };
       }
     }
-  ]
+  ],
+
+  leafText: node => '@' + node.attrs.handle
 };
 
 /**
@@ -78,5 +80,7 @@ export const tagNode = {
         };
       }
     }
-  ]
+  ],
+
+  leafText: node => '#' + node.attrs.tag
 };
