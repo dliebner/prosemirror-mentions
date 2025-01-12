@@ -7,9 +7,8 @@ export const mentionNode = {
   atom: true,
 
   attrs: {
-    id: "",
-    name: "",
-    email: ""
+    did: "",
+    handle: ""
   },
 
   selectable: false,
@@ -19,29 +18,23 @@ export const mentionNode = {
     return [
       "span",
       {
-        "data-mention-id": node.attrs.id,
-        "data-mention-name": node.attrs.name,
-        "data-mention-email": node.attrs.email,
+        "data-mention-did": node.attrs.did,
+        "data-mention-handle": node.attrs.handle,
         class: "prosemirror-mention-node"
       },
-      "@" + node.attrs.name || node.attrs.email
+      "@" + node.attrs.handle //|| node.attrs.email
     ];
   },
 
   parseDOM: [
     {
       // match tag with following CSS Selector
-      tag: "span[data-mention-id][data-mention-name][data-mention-email]",
+      tag: "span[data-mention-did][data-mention-handle]",
 
       getAttrs: dom => {
-        var id = dom.getAttribute("data-mention-id");
-        var name = dom.getAttribute("data-mention-name");
-        var email = dom.getAttribute("data-mention-email");
-        return {
-          id: id,
-          name: name,
-          email: email
-        };
+        var did = dom.getAttribute("data-mention-did");
+        var handle = dom.getAttribute("data-mention-handle");
+        return { did, handle };
       }
     }
   ]
