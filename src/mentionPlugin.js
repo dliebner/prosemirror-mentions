@@ -289,9 +289,7 @@ export function getMentionsPlugin( options ) {
           Decoration.inline(range.from, range.to, {
             nodeName: "span",
             class: opts.suggestionTextClass,
-            attributes: {
-              id: activeSuggestAnchorId
-            }
+            id: activeSuggestAnchorId,
           })
         ]);
       }
