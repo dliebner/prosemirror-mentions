@@ -317,8 +317,6 @@ export function getMentionsPlugin( options ) {
           );
         },
         destroy: () => {
-          // remove the dropdown el
-          el.remove();
           opts.destroy( el );
         }
       };
