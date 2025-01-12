@@ -188,7 +188,7 @@ export function getMentionsPlugin( options ) {
   };
 
   var hideList = function() {
-    el.style.display = "none";
+    //el.style.display = "none";
     opts.hideDropdownEl( el, opts );
   };
 
