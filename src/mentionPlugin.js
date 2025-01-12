@@ -300,7 +300,7 @@ export function getMentionsPlugin( options ) {
       return {
         update: view => {
           var state = this.key.getState(view.state);
-          if( !state.active || (opts.requireText && !state.text) ) {
+          if( !state.activeSuggestAnchorId || (opts.requireText && !state.text) ) {
             hideList();
             clearTimeout(showListTimeoutId);
             return;
