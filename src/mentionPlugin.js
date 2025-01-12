@@ -100,7 +100,7 @@ export const debounce = (function() {
 
 var getNewState = function() {
   return {
-    active: false,
+    activeSuggestAnchorId: undefined,
     range: {
       from: 0,
       to: 0
@@ -121,8 +121,8 @@ var defaultOpts = {
   requireText: false,
   /** @returns {DropdownEl} */
   createDropdownEl: () => document.createElement('div'),
-  /** @param {DropdownEl} dropdownEl @param {SuggestionItem[]} suggestionItems */
-  showDropdownEl: (dropdownEl, inputText, suggestionItems, opts) => null,
+  /** @param {DropdownEl} dropdownEl @param {SuggestionItem[]} suggestionItems @param {ReturnType<getNewState>} state */
+  showDropdownEl: (dropdownEl, suggestionItems, state, opts) => null,
   /** @param {DropdownEl} dropdownEl */
   hideDropdownEl: (dropdownEl, opts) => null,
   /** @param {(suggestionItems: SuggestionItem) => void} callWhenDone */
@@ -184,7 +184,7 @@ export function getMentionsPlugin( options ) {
     //el.style.top = top + "px";
     //el.style.display = "block";
     //el.style.zIndex = "999999";
-    opts.showDropdownEl( el, state.text, suggestionItems, opts );
+    opts.showDropdownEl( el, suggestionItems, state, opts );
   };
 
   var hideList = function() {
@@ -233,7 +233,7 @@ export function getMentionsPlugin( options ) {
 
         // if match found update state
         if (match) {
-          newState.active = true;
+          newState.activeSuggestAnchorId = 'pm-suggestion-' + Date.now();
           newState.range = match.range;
           newState.type = match.type;
           newState.text = match.queryText;
@@ -250,7 +250,7 @@ export function getMentionsPlugin( options ) {
         var state = this.getState(view.state);
 
         // don't handle if not in active mode
-        if( !state.active ) return false;
+        if( !state.activeSuggestAnchorId ) return false;
 
         // if any of the below keys, override with custom handlers.
         var down, up, enter, esc;
@@ -281,14 +281,17 @@ export function getMentionsPlugin( options ) {
 
       // to decorate the currently active @mention text in ui
       decorations(editorState) {
-        const { active, range } = this.getState(editorState);
+        const { activeSuggestAnchorId, range } = this.getState(editorState);
 
-        if (!active) return null;
+        if (!activeSuggestAnchorId) return null;
 
         return DecorationSet.create(editorState.doc, [
           Decoration.inline(range.from, range.to, {
             nodeName: "span",
-            class: opts.suggestionTextClass
+            class: opts.suggestionTextClass,
+            attributes: {
+              id: activeSuggestAnchorId
+            }
           })
         ]);
       }
