@@ -165,25 +165,25 @@ export function getMentionsPlugin( options ) {
     // get current @mention span left and top.
     // TODO: knock off domAtPos usage. It's not documented and is not officially a public API.
     // It's used currently, only to optimize the the query for textDOM
-    var node = view.domAtPos(view.state.selection.$from.pos);
-    var paraDOM = node.node;
-    var textDOM = paraDOM.querySelector("." + opts.suggestionTextClass);
+    //var node = view.domAtPos(view.state.selection.$from.pos);
+    //var paraDOM = node.node;
+    //var textDOM = paraDOM.querySelector("." + opts.suggestionTextClass);
 
     // TODO: should add null check case for textDOM
-    var offset = textDOM.getBoundingClientRect();
+   // var offset = textDOM.getBoundingClientRect();
 
     // TODO: think about outsourcing this positioning logic as options
     if( !elAddedToBody ) {
       elAddedToBody = true;
       document.body.appendChild(el);
     }
-    el.style.position = "fixed";
-    el.style.left = offset.left + "px";
+    //el.style.position = "fixed";
+    //el.style.left = offset.left + "px";
 
-    var top = textDOM.offsetHeight + offset.top;
-    el.style.top = top + "px";
-    el.style.display = "block";
-    el.style.zIndex = "999999";
+    //var top = textDOM.offsetHeight + offset.top;
+    //el.style.top = top + "px";
+    //el.style.display = "block";
+    //el.style.zIndex = "999999";
     opts.showDropdownEl( el, state.text, suggestionItems, opts );
   };
 
