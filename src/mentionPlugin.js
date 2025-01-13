@@ -207,6 +207,28 @@ export function getMentionsPlugin( options ) {
     }
   };
 
+  /** @type {Map<string,HTMLElement>} */
+  const suggestAnchorById = new Map();
+
+  /** @param {string} id */
+  var getSuggestAnchorById = function( id ) {
+
+    let existing = suggestAnchorById.get( id );
+
+    if( !existing ) {
+
+      existing = document.createElement('span');
+      existing.id = id;
+      existing.className = opts.suggestionTextClass;
+
+      suggestAnchorById.set(id, existing);
+
+    }
+
+    return existing;
+    
+  };
+
   /**
    * See https://prosemirror.net/docs/ref/#state.Plugin_System
    * for the plugin properties spec.
@@ -286,11 +308,11 @@ export function getMentionsPlugin( options ) {
         if (!activeSuggestAnchorId) return null;
 
         return DecorationSet.create(editorState.doc, [
-          Decoration.inline(range.from, range.to, {
-            nodeName: "span",
-            class: opts.suggestionTextClass,
-            id: activeSuggestAnchorId,
-          })
+          Decoration.widget(
+            range.from,
+            () => getSuggestAnchorById( activeSuggestAnchorId ),
+            { destroy: () => suggestAnchorById.delete( activeSuggestAnchorId ) }
+          )
         ]);
       }
     },
