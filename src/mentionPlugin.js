@@ -217,6 +217,8 @@ export function getMentionsPlugin( options ) {
 
     if( !existing ) {
 
+      console.log('create', id);
+
       existing = document.createElement('span');
       existing.id = id;
       existing.className = opts.suggestionTextClass;
@@ -311,7 +313,12 @@ export function getMentionsPlugin( options ) {
           Decoration.widget(
             range.from,
             () => getSuggestAnchorById( activeSuggestAnchorId ),
-            { destroy: () => suggestAnchorById.delete( activeSuggestAnchorId ) }
+            {
+              destroy: () => {
+                console.log('destroy', activeSuggestAnchorId);
+                suggestAnchorById.delete( activeSuggestAnchorId );
+              }
+            }
           )
         ]);
       }
