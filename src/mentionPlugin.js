@@ -187,9 +187,11 @@ export function getMentionsPlugin( options ) {
     opts.showDropdownEl( el, suggestionItems, state, opts );
   };
 
-  var hideList = function() {
+  var hideList = function(state) {
     //el.style.display = "none";
     opts.hideDropdownEl( el, opts );
+    const anchorId = state.activeSuggestAnchorId;
+    if( anchorId ) suggestAnchorById.delete( anchorId );
   };
 
   /** @param {typeof defaultOpts} opts */
@@ -217,12 +219,10 @@ export function getMentionsPlugin( options ) {
 
     if( !existing ) {
 
-      console.log('create', id);
-
       existing = document.createElement('span');
       existing.id = id;
       existing.className = opts.suggestionTextClass;
-
+      
       suggestAnchorById.set(id, existing);
 
     }
@@ -294,7 +294,7 @@ export function getMentionsPlugin( options ) {
           return true;
         } else if (esc) {
           clearTimeout(showListTimeoutId);
-          hideList();
+          hideList(state);
           this.state = getNewState();
           return true;
         } else {
@@ -313,12 +313,6 @@ export function getMentionsPlugin( options ) {
           Decoration.widget(
             range.from,
             () => getSuggestAnchorById( activeSuggestAnchorId ),
-            {
-              destroy: () => {
-                console.log('destroy', activeSuggestAnchorId);
-                suggestAnchorById.delete( activeSuggestAnchorId );
-              }
-            }
           )
         ]);
       }
@@ -330,7 +324,7 @@ export function getMentionsPlugin( options ) {
         update: view => {
           var state = this.key.getState(view.state);
           if( !state.activeSuggestAnchorId || (opts.requireText && !state.text) ) {
-            hideList();
+            hideList(state);
             clearTimeout(showListTimeoutId);
             return;
           }
