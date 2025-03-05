@@ -150,8 +150,10 @@ export function getMentionsPlugin( options ) {
   /** @type {typeof defaultOpts} */
   const opts = Object.assign({}, defaultOpts, options);
 
-  // timeoutId for clearing debounced calls
-  var showListTimeoutId = null;
+  /** timeoutId for clearing debounced calls */
+  var showListTimeoutId = null,
+  /** @type {((e: CustomEvent) => void)|undefined} */
+  handleMentionSelect;
 
   /** dropdown element */
   var el = opts.createDropdownEl(),
@@ -180,6 +182,14 @@ export function getMentionsPlugin( options ) {
     //el.style.position = "fixed";
     //el.style.left = offset.left + "px";
 
+    // re-bind pm-mention-select handler
+    unbindHandleMentionSelect();
+    handleMentionSelect = e => {
+      e.stopPropagation();
+      select(view, state, opts);
+    };
+    el.addEventListener('pm-mention-select', handleMentionSelect);
+
     //var top = textDOM.offsetHeight + offset.top;
     //el.style.top = top + "px";
     //el.style.display = "block";
@@ -187,8 +197,16 @@ export function getMentionsPlugin( options ) {
     opts.showDropdownEl( el, suggestionItems, state, opts );
   };
 
+  var unbindHandleMentionSelect = () => {
+    if( handleMentionSelect ) {
+      el?.removeEventListener('pm-mention-select', handleMentionSelect);
+      handleMentionSelect = undefined;
+    }
+  };
+
   var hideList = function(state) {
     //el.style.display = "none";
+    unbindHandleMentionSelect();
     opts.hideDropdownEl( el, opts );
     const anchorId = state.activeSuggestAnchorId;
     if( anchorId ) suggestAnchorById.delete( anchorId );
@@ -341,6 +359,7 @@ export function getMentionsPlugin( options ) {
           );
         },
         destroy: () => {
+          unbindHandleMentionSelect();
           opts.destroy( el );
         }
       };
